@@ -16,6 +16,7 @@ const PIPE_INTERVAL = 1500; // milliseconds
 let birdX = CANVAS_WIDTH / 4;
 let birdY = CANVAS_HEIGHT / 2;
 let birdVelocity = 0;
+let birdFrame = 0;
 
 // Pipe variables
 let pipes = [];
@@ -28,19 +29,31 @@ let score = 0;
 let gameRunning = false;
 let gameStarted = false;
 
+// Background variables
+let backgroundX = 0;
+
 // Canvas setup
 canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
 
 // Load images
-const birdImage = new Image();
-birdImage.src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/bird.png';
+const birdImages = [
+    new Image(),
+    new Image(),
+    new Image(),
+];
+birdImages[0].src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/bird-1.png';
+birdImages[1].src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/bird-2.png';
+birdImages[2].src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/bird-3.png';
 
 const pipeImageTop = new Image();
 pipeImageTop.src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/pipe-top.png';
 
 const pipeImageBottom = new Image();
 pipeImageBottom.src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/pipe-bottom.png';
+
+const backgroundImage = new Image();
+backgroundImage.src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/background-day.png';
 
 // Game loop
 function gameLoop() {
@@ -55,6 +68,7 @@ function gameLoop() {
 function update() {
     birdVelocity += GRAVITY;
     birdY += birdVelocity;
+    birdFrame = (birdFrame + 1) % 3;
 
     // Check collision with canvas boundaries
     if (birdY + BIRD_HEIGHT > CANVAS_HEIGHT || birdY < 0) {
@@ -88,14 +102,22 @@ function update() {
             gameOver();
         }
     }
+
+    // Scroll background
+    backgroundX -= 1;
+    if (backgroundX <= -CANVAS_WIDTH) {
+        backgroundX = 0;
+    }
 }
 
 // Draw game elements
 function draw() {
-    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    // Draw background
+    ctx.drawImage(backgroundImage, backgroundX, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    ctx.drawImage(backgroundImage, backgroundX + CANVAS_WIDTH, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     // Draw bird
-    ctx.drawImage(birdImage, birdX, birdY, BIRD_WIDTH, BIRD_HEIGHT);
+    ctx.drawImage(birdImages[birdFrame], birdX, birdY, BIRD_WIDTH, BIRD_HEIGHT);
 
     // Draw pipes
     for (let pipe of pipes) {
