@@ -17,6 +17,7 @@ let birdX = CANVAS_WIDTH / 4;
 let birdY = CANVAS_HEIGHT / 2;
 let birdVelocity = 0;
 let birdFrame = 0;
+let birdAnimationCounter = 0;
 
 // Pipe variables
 let pipes = [];
@@ -31,6 +32,7 @@ let gameStarted = false;
 
 // Background variables
 let backgroundX = 0;
+let foregroundX = 0;
 
 // Canvas setup
 canvas.width = CANVAS_WIDTH;
@@ -55,6 +57,12 @@ pipeImageBottom.src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/
 const backgroundImage = new Image();
 backgroundImage.src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/background-day.png';
 
+const foregroundImage = new Image();
+foregroundImage.src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/foreground.png';
+
+// Load sound effects (sound effect code present but not used)
+const gameOverSound = new Audio('https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/sfx_hit.wav');
+
 // Game loop
 function gameLoop() {
     if (gameRunning) {
@@ -68,10 +76,13 @@ function gameLoop() {
 function update() {
     birdVelocity += GRAVITY;
     birdY += birdVelocity;
-    birdFrame = (birdFrame + 1) % 3;
+    birdAnimationCounter = (birdAnimationCounter + 1) % 6;
+    if (birdAnimationCounter === 0) {
+        birdFrame = (birdFrame + 1) % 3;
+    }
 
     // Check collision with canvas boundaries
-    if (birdY + BIRD_HEIGHT > CANVAS_HEIGHT || birdY < 0) {
+    if (birdY + BIRD_HEIGHT > CANVAS_HEIGHT - foregroundImage.height || birdY < 0) {
         gameOver();
     }
 
@@ -108,6 +119,12 @@ function update() {
     if (backgroundX <= -CANVAS_WIDTH) {
         backgroundX = 0;
     }
+
+    // Scroll foreground
+    foregroundX -= 2;
+    if (foregroundX <= -CANVAS_WIDTH) {
+        foregroundX = 0;
+    }
 }
 
 // Draw game elements
@@ -124,6 +141,10 @@ function draw() {
         ctx.drawImage(pipeImageTop, pipe.x, pipe.topHeight - pipeImageTop.height);
         ctx.drawImage(pipeImageBottom, pipe.x, pipe.bottomY);
     }
+
+    // Draw foreground
+    ctx.drawImage(foregroundImage, foregroundX, CANVAS_HEIGHT - foregroundImage.height);
+    ctx.drawImage(foregroundImage, foregroundX + CANVAS_WIDTH, CANVAS_HEIGHT - foregroundImage.height);
 
     // Draw score
     ctx.fillStyle = 'white';
@@ -177,6 +198,8 @@ function generatePipe() {
 // Game over
 function gameOver() {
     gameRunning = false;
+    // Uncomment the line below to use sound effect
+    // gameOverSound.play();
 }
 
 // Reset game
