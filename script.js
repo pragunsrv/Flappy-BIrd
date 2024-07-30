@@ -29,6 +29,7 @@ let score = 0;
 // Game state
 let gameRunning = false;
 let gameStarted = false;
+let countdown = 3;
 
 // Background variables
 let backgroundX = 0;
@@ -110,7 +111,9 @@ function draw() {
 
     // Draw bird
     ctx.fillStyle = 'yellow';
-    ctx.fillRect(birdX, birdY, BIRD_WIDTH, BIRD_HEIGHT);
+    ctx.beginPath();
+    ctx.arc(birdX + BIRD_WIDTH / 2, birdY + BIRD_HEIGHT / 2, BIRD_WIDTH / 2, 0, Math.PI * 2);
+    ctx.fill();
 
     // Draw pipes
     ctx.fillStyle = 'green';
@@ -137,13 +140,24 @@ function draw() {
         ctx.fillText('Click to Restart', CANVAS_WIDTH / 2 - 85, CANVAS_HEIGHT / 2 + 30);
     }
 
-    // Draw start screen
+    // Draw start screen with countdown
     if (!gameStarted) {
         ctx.fillStyle = 'black';
         ctx.font = '30px Arial';
         ctx.fillText('Flappy Bird', CANVAS_WIDTH / 2 - 85, CANVAS_HEIGHT / 2 - 50);
         ctx.font = '20px Arial';
-        ctx.fillText('Click to Start', CANVAS_WIDTH / 2 - 70, CANVAS_HEIGHT / 2);
+        ctx.fillText(`Get Ready: ${countdown}`, CANVAS_WIDTH / 2 - 70, CANVAS_HEIGHT / 2);
+
+        // Countdown logic
+        if (countdown > 0) {
+            setTimeout(() => {
+                countdown--;
+                if (countdown === 0) {
+                    gameStarted = true;
+                    gameRunning = true;
+                }
+            }, 1000);
+        }
     }
 }
 
@@ -186,6 +200,7 @@ function resetGame() {
     pipeTimer = 0;
     gameRunning = true;
     gameStarted = true;
+    countdown = 3;
 }
 
 // Start the game loop
