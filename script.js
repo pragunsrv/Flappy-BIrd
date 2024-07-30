@@ -8,11 +8,21 @@ const BIRD_WIDTH = 34;
 const BIRD_HEIGHT = 24;
 const GRAVITY = 0.25;
 const FLAP_STRENGTH = 4.5;
+const PIPE_WIDTH = 50;
+const PIPE_GAP = 120;
+const PIPE_INTERVAL = 1500; // milliseconds
 
 // Bird variables
 let birdX = CANVAS_WIDTH / 4;
 let birdY = CANVAS_HEIGHT / 2;
 let birdVelocity = 0;
+
+// Pipe variables
+let pipes = [];
+let pipeTimer = 0;
+
+// Scoring
+let score = 0;
 
 // Canvas setup
 canvas.width = CANVAS_WIDTH;
@@ -30,8 +40,37 @@ function update() {
     birdVelocity += GRAVITY;
     birdY += birdVelocity;
 
+    // Check collision with canvas boundaries
     if (birdY + BIRD_HEIGHT > CANVAS_HEIGHT || birdY < 0) {
         resetGame();
+    }
+
+    // Pipe generation
+    pipeTimer += 16.67; // Approximation for 60 FPS
+    if (pipeTimer > PIPE_INTERVAL) {
+        generatePipe();
+        pipeTimer = 0;
+    }
+
+    // Update pipes
+    for (let i = 0; i < pipes.length; i++) {
+        pipes[i].x -= 2;
+        if (pipes[i].x + PIPE_WIDTH < 0) {
+            pipes.splice(i, 1);
+            i--;
+            score++;
+        }
+    }
+
+    // Check collision with pipes
+    for (let pipe of pipes) {
+        if (
+            birdX < pipe.x + PIPE_WIDTH &&
+            birdX + BIRD_WIDTH > pipe.x &&
+            (birdY < pipe.topHeight || birdY + BIRD_HEIGHT > pipe.bottomY)
+        ) {
+            resetGame();
+        }
     }
 }
 
@@ -42,6 +81,18 @@ function draw() {
     // Draw bird
     ctx.fillStyle = 'yellow';
     ctx.fillRect(birdX, birdY, BIRD_WIDTH, BIRD_HEIGHT);
+
+    // Draw pipes
+    ctx.fillStyle = 'green';
+    for (let pipe of pipes) {
+        ctx.fillRect(pipe.x, 0, PIPE_WIDTH, pipe.topHeight);
+        ctx.fillRect(pipe.x, pipe.bottomY, PIPE_WIDTH, CANVAS_HEIGHT - pipe.bottomY);
+    }
+
+    // Draw score
+    ctx.fillStyle = 'white';
+    ctx.font = '20px Arial';
+    ctx.fillText(`Score: ${score}`, 10, 25);
 }
 
 // Handle flap input
@@ -51,10 +102,24 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
+// Generate a new pipe
+function generatePipe() {
+    const topHeight = Math.random() * (CANVAS_HEIGHT - PIPE_GAP - 50) + 50;
+    const bottomY = topHeight + PIPE_GAP;
+    pipes.push({
+        x: CANVAS_WIDTH,
+        topHeight: topHeight,
+        bottomY: bottomY
+    });
+}
+
 // Reset game
 function resetGame() {
     birdY = CANVAS_HEIGHT / 2;
     birdVelocity = 0;
+    pipes = [];
+    score = 0;
+    pipeTimer = 0;
 }
 
 // Start game
