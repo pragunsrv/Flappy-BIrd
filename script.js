@@ -11,6 +11,10 @@ const FLAP_STRENGTH = 4.5;
 const PIPE_WIDTH = 50;
 const PIPE_GAP = 120;
 const PIPE_INTERVAL = 1500; // milliseconds
+const BACKGROUND_SPEED = 1;
+const FOREGROUND_SPEED = 2;
+const PAUSE_MENU_WIDTH = 200;
+const PAUSE_MENU_HEIGHT = 150;
 
 // Bird variables
 let birdX = CANVAS_WIDTH / 4;
@@ -18,6 +22,7 @@ let birdY = CANVAS_HEIGHT / 2;
 let birdVelocity = 0;
 let birdFrame = 0;
 let birdAnimationCounter = 0;
+const birdFrames = ['yellow', 'orange', 'red']; // Different bird colors
 
 // Pipe variables
 let pipes = [];
@@ -32,16 +37,52 @@ let highScore = 0;
 let gameRunning = false;
 let gameStarted = false;
 let countdown = 3;
+let gamePaused = false;
 
 // Background variables
 let backgroundX = 0;
-let backgroundSpeed = 1;
+let backgroundSpeed = BACKGROUND_SPEED;
 let foregroundX = 0;
-let foregroundSpeed = 2;
+let foregroundSpeed = FOREGROUND_SPEED;
 
 // Canvas setup
 canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
+
+// Create pause menu
+const pauseMenu = document.createElement('div');
+pauseMenu.id = 'pauseMenu';
+pauseMenu.innerHTML = `
+    <h2>Paused</h2>
+    <button id="resumeButton">Resume</button>
+    <button id="restartButton">Restart</button>
+`;
+document.body.appendChild(pauseMenu);
+
+// Event listeners
+document.addEventListener('keydown', function(event) {
+    if (event.code === 'Space' && gameRunning) {
+        birdVelocity = -FLAP_STRENGTH;
+    }
+    if (event.code === 'Escape') {
+        togglePause();
+    }
+});
+
+canvas.addEventListener('click', function() {
+    if (!gameRunning) {
+        resetGame();
+    }
+});
+
+document.getElementById('resumeButton').addEventListener('click', function() {
+    togglePause();
+});
+
+document.getElementById('restartButton').addEventListener('click', function() {
+    resetGame();
+    togglePause();
+});
 
 // Game loop
 function gameLoop() {
@@ -58,7 +99,7 @@ function update() {
     birdY += birdVelocity;
     birdAnimationCounter = (birdAnimationCounter + 1) % 6;
     if (birdAnimationCounter === 0) {
-        birdFrame = (birdFrame + 1) % 3;
+        birdFrame = (birdFrame + 1) % birdFrames.length;
     }
 
     // Check collision with canvas boundaries
@@ -110,13 +151,13 @@ function update() {
 // Draw game elements
 function draw() {
     // Draw background
-    ctx.fillStyle = '#87CEEB'; // Lighter blue for a sky
+    ctx.fillStyle = '#87CEEB'; // Lighter blue for the sky
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    ctx.fillStyle = '#4DB6AC'; // Darker green for trees or distant mountains
+    ctx.fillStyle = '#4DB6AC'; // Darker green for distant mountains
     ctx.fillRect(backgroundX, CANVAS_HEIGHT - 150, CANVAS_WIDTH, 150); // Background layer
 
     // Draw bird
-    ctx.fillStyle = 'yellow';
+    ctx.fillStyle = birdFrames[birdFrame];
     ctx.beginPath();
     ctx.arc(birdX + BIRD_WIDTH / 2, birdY + BIRD_HEIGHT / 2, BIRD_WIDTH / 2, 0, Math.PI * 2);
     ctx.fill();
@@ -137,6 +178,13 @@ function draw() {
     ctx.font = '20px Arial';
     ctx.fillText(`Score: ${score}`, 10, 25);
     ctx.fillText(`High Score: ${highScore}`, 10, 50);
+
+    // Draw pause menu
+    if (gamePaused) {
+        pauseMenu.style.display = 'block';
+    } else {
+        pauseMenu.style.display = 'none';
+    }
 
     // Draw game over message
     if (!gameRunning && gameStarted) {
@@ -209,11 +257,21 @@ function resetGame() {
     score = 0;
     pipeTimer = 0;
     pipeSpeed = 2; // Reset pipe speed
-    backgroundSpeed = 1; // Reset background speed
-    foregroundSpeed = 2; // Reset foreground speed
+    backgroundSpeed = BACKGROUND_SPEED; // Reset background speed
+    foregroundSpeed = FOREGROUND_SPEED; // Reset foreground speed
     gameRunning = true;
     gameStarted = true;
     countdown = 3;
+}
+
+// Toggle pause menu
+function togglePause() {
+    gamePaused = !gamePaused;
+    if (gamePaused) {
+        gameRunning = false;
+    } else {
+        gameRunning = true;
+    }
 }
 
 // Start the game loop
