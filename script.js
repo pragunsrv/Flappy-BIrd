@@ -38,31 +38,6 @@ let foregroundX = 0;
 canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
 
-// Load images
-const birdImages = [
-    new Image(),
-    new Image(),
-    new Image(),
-];
-birdImages[0].src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/bird-1.png';
-birdImages[1].src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/bird-2.png';
-birdImages[2].src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/bird-3.png';
-
-const pipeImageTop = new Image();
-pipeImageTop.src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/pipe-top.png';
-
-const pipeImageBottom = new Image();
-pipeImageBottom.src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/pipe-bottom.png';
-
-const backgroundImage = new Image();
-backgroundImage.src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/background-day.png';
-
-const foregroundImage = new Image();
-foregroundImage.src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/foreground.png';
-
-// Load sound effects (sound effect code present but not used)
-const gameOverSound = new Audio('https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/sfx_hit.wav');
-
 // Game loop
 function gameLoop() {
     if (gameRunning) {
@@ -82,7 +57,7 @@ function update() {
     }
 
     // Check collision with canvas boundaries
-    if (birdY + BIRD_HEIGHT > CANVAS_HEIGHT - foregroundImage.height || birdY < 0) {
+    if (birdY + BIRD_HEIGHT > CANVAS_HEIGHT - 50 || birdY < 0) {
         gameOver();
     }
 
@@ -130,21 +105,23 @@ function update() {
 // Draw game elements
 function draw() {
     // Draw background
-    ctx.drawImage(backgroundImage, backgroundX, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    ctx.drawImage(backgroundImage, backgroundX + CANVAS_WIDTH, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    ctx.fillStyle = '#70c5ce';
+    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     // Draw bird
-    ctx.drawImage(birdImages[birdFrame], birdX, birdY, BIRD_WIDTH, BIRD_HEIGHT);
+    ctx.fillStyle = 'yellow';
+    ctx.fillRect(birdX, birdY, BIRD_WIDTH, BIRD_HEIGHT);
 
     // Draw pipes
+    ctx.fillStyle = 'green';
     for (let pipe of pipes) {
-        ctx.drawImage(pipeImageTop, pipe.x, pipe.topHeight - pipeImageTop.height);
-        ctx.drawImage(pipeImageBottom, pipe.x, pipe.bottomY);
+        ctx.fillRect(pipe.x, 0, PIPE_WIDTH, pipe.topHeight);
+        ctx.fillRect(pipe.x, pipe.bottomY, PIPE_WIDTH, CANVAS_HEIGHT - pipe.bottomY);
     }
 
     // Draw foreground
-    ctx.drawImage(foregroundImage, foregroundX, CANVAS_HEIGHT - foregroundImage.height);
-    ctx.drawImage(foregroundImage, foregroundX + CANVAS_WIDTH, CANVAS_HEIGHT - foregroundImage.height);
+    ctx.fillStyle = 'brown';
+    ctx.fillRect(0, CANVAS_HEIGHT - 50, CANVAS_WIDTH, 50);
 
     // Draw score
     ctx.fillStyle = 'white';
@@ -198,8 +175,6 @@ function generatePipe() {
 // Game over
 function gameOver() {
     gameRunning = false;
-    // Uncomment the line below to use sound effect
-    // gameOverSound.play();
 }
 
 // Reset game
@@ -213,5 +188,5 @@ function resetGame() {
     gameStarted = true;
 }
 
-// Start game
+// Start the game loop
 gameLoop();
