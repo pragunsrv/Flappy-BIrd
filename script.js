@@ -25,11 +25,22 @@ let pipeTimer = 0;
 let score = 0;
 
 // Game state
-let gameRunning = true;
+let gameRunning = false;
+let gameStarted = false;
 
 // Canvas setup
 canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
+
+// Load images
+const birdImage = new Image();
+birdImage.src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/bird.png';
+
+const pipeImageTop = new Image();
+pipeImageTop.src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/pipe-top.png';
+
+const pipeImageBottom = new Image();
+pipeImageBottom.src = 'https://raw.githubusercontent.com/kriscross07/FlappyBird/master/assets/pipe-bottom.png';
 
 // Game loop
 function gameLoop() {
@@ -84,14 +95,12 @@ function draw() {
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     // Draw bird
-    ctx.fillStyle = 'yellow';
-    ctx.fillRect(birdX, birdY, BIRD_WIDTH, BIRD_HEIGHT);
+    ctx.drawImage(birdImage, birdX, birdY, BIRD_WIDTH, BIRD_HEIGHT);
 
     // Draw pipes
-    ctx.fillStyle = 'green';
     for (let pipe of pipes) {
-        ctx.fillRect(pipe.x, 0, PIPE_WIDTH, pipe.topHeight);
-        ctx.fillRect(pipe.x, pipe.bottomY, PIPE_WIDTH, CANVAS_HEIGHT - pipe.bottomY);
+        ctx.drawImage(pipeImageTop, pipe.x, pipe.topHeight - pipeImageTop.height);
+        ctx.drawImage(pipeImageBottom, pipe.x, pipe.bottomY);
     }
 
     // Draw score
@@ -100,12 +109,21 @@ function draw() {
     ctx.fillText(`Score: ${score}`, 10, 25);
 
     // Draw game over message
-    if (!gameRunning) {
+    if (!gameRunning && gameStarted) {
         ctx.fillStyle = 'red';
         ctx.font = '30px Arial';
         ctx.fillText('Game Over', CANVAS_WIDTH / 2 - 80, CANVAS_HEIGHT / 2);
         ctx.font = '20px Arial';
         ctx.fillText('Click to Restart', CANVAS_WIDTH / 2 - 85, CANVAS_HEIGHT / 2 + 30);
+    }
+
+    // Draw start screen
+    if (!gameStarted) {
+        ctx.fillStyle = 'black';
+        ctx.font = '30px Arial';
+        ctx.fillText('Flappy Bird', CANVAS_WIDTH / 2 - 85, CANVAS_HEIGHT / 2 - 50);
+        ctx.font = '20px Arial';
+        ctx.fillText('Click to Start', CANVAS_WIDTH / 2 - 70, CANVAS_HEIGHT / 2);
     }
 }
 
@@ -116,7 +134,7 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-// Handle game restart
+// Handle game start/restart
 canvas.addEventListener('click', function() {
     if (!gameRunning) {
         resetGame();
@@ -147,6 +165,7 @@ function resetGame() {
     score = 0;
     pipeTimer = 0;
     gameRunning = true;
+    gameStarted = true;
 }
 
 // Start game
