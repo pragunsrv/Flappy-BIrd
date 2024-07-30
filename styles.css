@@ -13,7 +13,7 @@ canvas {
     border: 1px solid #000;
 }
 
-#pauseMenu {
+#pauseMenu, #leaderboard {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -26,7 +26,7 @@ canvas {
     display: none;
 }
 
-#pauseMenu button {
+#pauseMenu button, #leaderboard button {
     background-color: #ffcc00;
     border: none;
     padding: 10px 20px;
@@ -36,6 +36,17 @@ canvas {
     margin: 10px;
 }
 
-#pauseMenu button:hover {
+#pauseMenu button:hover, #leaderboard button:hover {
     background-color: #ff9900;
+}
+
+#leaderboard ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#leaderboard li {
+    padding: 5px 0;
+    border-bottom: 1px solid #fff;
 }

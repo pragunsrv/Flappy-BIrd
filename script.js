@@ -15,6 +15,7 @@ const BACKGROUND_SPEED = 1;
 const FOREGROUND_SPEED = 2;
 const PAUSE_MENU_WIDTH = 200;
 const PAUSE_MENU_HEIGHT = 150;
+const LEADERBOARD_SIZE = 5;
 
 // Bird variables
 let birdX = CANVAS_WIDTH / 4;
@@ -32,11 +33,13 @@ let pipeSpeed = 2;
 // Scoring
 let score = 0;
 let highScore = 0;
+const leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
 
 // Game state
 let gameRunning = false;
 let gameStarted = false;
 let countdown = 3;
+let countdownStartTime = 0; // Initialize countdownStartTime
 let gamePaused = false;
 
 // Background variables
@@ -50,14 +53,15 @@ canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
 
 // Create pause menu
-const pauseMenu = document.createElement('div');
-pauseMenu.id = 'pauseMenu';
-pauseMenu.innerHTML = `
-    <h2>Paused</h2>
-    <button id="resumeButton">Resume</button>
-    <button id="restartButton">Restart</button>
-`;
-document.body.appendChild(pauseMenu);
+const pauseMenu = document.getElementById('pauseMenu');
+const leaderboardMenu = document.getElementById('leaderboard');
+
+// Create leaderboard list
+const leaderboardList = document.getElementById('leaderboardList');
+const backToGameButton = document.getElementById('backToGameButton');
+const resumeButton = document.getElementById('resumeButton');
+const restartButton = document.getElementById('restartButton');
+const mainMenuButton = document.getElementById('mainMenuButton');
 
 // Event listeners
 document.addEventListener('keydown', function(event) {
@@ -75,13 +79,21 @@ canvas.addEventListener('click', function() {
     }
 });
 
-document.getElementById('resumeButton').addEventListener('click', function() {
+resumeButton.addEventListener('click', function() {
     togglePause();
 });
 
-document.getElementById('restartButton').addEventListener('click', function() {
+restartButton.addEventListener('click', function() {
     resetGame();
     togglePause();
+});
+
+mainMenuButton.addEventListener('click', function() {
+    showLeaderboard();
+});
+
+backToGameButton.addEventListener('click', function() {
+    hideLeaderboard();
 });
 
 // Game loop
@@ -186,6 +198,11 @@ function draw() {
         pauseMenu.style.display = 'none';
     }
 
+    // Draw leaderboard
+    if (leaderboardMenu.style.display === 'block') {
+        renderLeaderboard();
+    }
+
     // Draw game over message
     if (!gameRunning && gameStarted) {
         ctx.fillStyle = 'red';
@@ -195,44 +212,21 @@ function draw() {
         ctx.fillText('Click to Restart', CANVAS_WIDTH / 2 - 85, CANVAS_HEIGHT / 2 + 30);
     }
 
-    // Draw start screen with countdown
-    if (!gameStarted) {
-        ctx.fillStyle = 'black';
-        ctx.font = '30px Arial';
-        ctx.fillText('Flappy Bird', CANVAS_WIDTH / 2 - 85, CANVAS_HEIGHT / 2 - 50);
-        ctx.font = '20px Arial';
-        ctx.fillText(`Get Ready: ${countdown}`, CANVAS_WIDTH / 2 - 70, CANVAS_HEIGHT / 2);
-
-        // Countdown logic
-        if (countdown > 0) {
-            setTimeout(() => {
-                countdown--;
-                if (countdown === 0) {
-                    gameStarted = true;
-                    gameRunning = true;
-                }
-            }, 1000);
+    // Draw countdown
+    if (!gameStarted && countdown > 0) {
+        ctx.fillStyle = 'white';
+        ctx.font = '50px Arial';
+        ctx.fillText(countdown, CANVAS_WIDTH / 2 - 20, CANVAS_HEIGHT / 2);
+        if (Date.now() - countdownStartTime > 1000) {
+            countdown--;
+            countdownStartTime = Date.now();
         }
     }
 }
 
-// Handle flap input
-document.addEventListener('keydown', function(event) {
-    if (event.code === 'Space' && gameRunning) {
-        birdVelocity = -FLAP_STRENGTH;
-    }
-});
-
-// Handle game start/restart
-canvas.addEventListener('click', function() {
-    if (!gameRunning) {
-        resetGame();
-    }
-});
-
-// Generate a new pipe
+// Generate new pipe
 function generatePipe() {
-    const topHeight = Math.random() * (CANVAS_HEIGHT - PIPE_GAP - 50) + 50;
+    const topHeight = Math.random() * (CANVAS_HEIGHT - PIPE_GAP - 100) + 50;
     const bottomY = topHeight + PIPE_GAP;
     pipes.push({
         x: CANVAS_WIDTH,
@@ -246,6 +240,39 @@ function gameOver() {
     gameRunning = false;
     if (score > highScore) {
         highScore = score;
+        updateLeaderboard();
+    }
+}
+
+// Update leaderboard
+function updateLeaderboard() {
+    leaderboard.push({ score: highScore, date: new Date().toISOString() });
+    leaderboard.sort((a, b) => b.score - a.score);
+    if (leaderboard.length > LEADERBOARD_SIZE) {
+        leaderboard.pop();
+    }
+    localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+}
+
+// Show leaderboard
+function showLeaderboard() {
+    pauseMenu.style.display = 'none';
+    leaderboardMenu.style.display = 'block';
+}
+
+// Hide leaderboard
+function hideLeaderboard() {
+    leaderboardMenu.style.display = 'none';
+    pauseMenu.style.display = 'block';
+}
+
+// Render leaderboard
+function renderLeaderboard() {
+    leaderboardList.innerHTML = '';
+    for (let entry of leaderboard) {
+        const li = document.createElement('li');
+        li.textContent = `Score: ${entry.score} - Date: ${new Date(entry.date).toLocaleString()}`;
+        leaderboardList.appendChild(li);
     }
 }
 
@@ -262,6 +289,7 @@ function resetGame() {
     gameRunning = true;
     gameStarted = true;
     countdown = 3;
+    countdownStartTime = Date.now(); // Initialize countdownStartTime
 }
 
 // Toggle pause menu
