@@ -24,13 +24,18 @@ let pipeTimer = 0;
 // Scoring
 let score = 0;
 
+// Game state
+let gameRunning = true;
+
 // Canvas setup
 canvas.width = CANVAS_WIDTH;
 canvas.height = CANVAS_HEIGHT;
 
 // Game loop
 function gameLoop() {
-    update();
+    if (gameRunning) {
+        update();
+    }
     draw();
     requestAnimationFrame(gameLoop);
 }
@@ -42,7 +47,7 @@ function update() {
 
     // Check collision with canvas boundaries
     if (birdY + BIRD_HEIGHT > CANVAS_HEIGHT || birdY < 0) {
-        resetGame();
+        gameOver();
     }
 
     // Pipe generation
@@ -69,7 +74,7 @@ function update() {
             birdX + BIRD_WIDTH > pipe.x &&
             (birdY < pipe.topHeight || birdY + BIRD_HEIGHT > pipe.bottomY)
         ) {
-            resetGame();
+            gameOver();
         }
     }
 }
@@ -93,12 +98,28 @@ function draw() {
     ctx.fillStyle = 'white';
     ctx.font = '20px Arial';
     ctx.fillText(`Score: ${score}`, 10, 25);
+
+    // Draw game over message
+    if (!gameRunning) {
+        ctx.fillStyle = 'red';
+        ctx.font = '30px Arial';
+        ctx.fillText('Game Over', CANVAS_WIDTH / 2 - 80, CANVAS_HEIGHT / 2);
+        ctx.font = '20px Arial';
+        ctx.fillText('Click to Restart', CANVAS_WIDTH / 2 - 85, CANVAS_HEIGHT / 2 + 30);
+    }
 }
 
 // Handle flap input
 document.addEventListener('keydown', function(event) {
-    if (event.code === 'Space') {
+    if (event.code === 'Space' && gameRunning) {
         birdVelocity = -FLAP_STRENGTH;
+    }
+});
+
+// Handle game restart
+canvas.addEventListener('click', function() {
+    if (!gameRunning) {
+        resetGame();
     }
 });
 
@@ -113,6 +134,11 @@ function generatePipe() {
     });
 }
 
+// Game over
+function gameOver() {
+    gameRunning = false;
+}
+
 // Reset game
 function resetGame() {
     birdY = CANVAS_HEIGHT / 2;
@@ -120,6 +146,7 @@ function resetGame() {
     pipes = [];
     score = 0;
     pipeTimer = 0;
+    gameRunning = true;
 }
 
 // Start game
