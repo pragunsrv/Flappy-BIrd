@@ -22,9 +22,11 @@ let birdAnimationCounter = 0;
 // Pipe variables
 let pipes = [];
 let pipeTimer = 0;
+let pipeSpeed = 2;
 
 // Scoring
 let score = 0;
+let highScore = 0;
 
 // Game state
 let gameRunning = false;
@@ -33,7 +35,9 @@ let countdown = 3;
 
 // Background variables
 let backgroundX = 0;
+let backgroundSpeed = 1;
 let foregroundX = 0;
+let foregroundSpeed = 2;
 
 // Canvas setup
 canvas.width = CANVAS_WIDTH;
@@ -71,7 +75,7 @@ function update() {
 
     // Update pipes
     for (let i = 0; i < pipes.length; i++) {
-        pipes[i].x -= 2;
+        pipes[i].x -= pipeSpeed;
         if (pipes[i].x + PIPE_WIDTH < 0) {
             pipes.splice(i, 1);
             i--;
@@ -91,13 +95,13 @@ function update() {
     }
 
     // Scroll background
-    backgroundX -= 1;
+    backgroundX -= backgroundSpeed;
     if (backgroundX <= -CANVAS_WIDTH) {
         backgroundX = 0;
     }
 
     // Scroll foreground
-    foregroundX -= 2;
+    foregroundX -= foregroundSpeed;
     if (foregroundX <= -CANVAS_WIDTH) {
         foregroundX = 0;
     }
@@ -106,8 +110,10 @@ function update() {
 // Draw game elements
 function draw() {
     // Draw background
-    ctx.fillStyle = '#70c5ce';
+    ctx.fillStyle = '#87CEEB'; // Lighter blue for a sky
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    ctx.fillStyle = '#4DB6AC'; // Darker green for trees or distant mountains
+    ctx.fillRect(backgroundX, CANVAS_HEIGHT - 150, CANVAS_WIDTH, 150); // Background layer
 
     // Draw bird
     ctx.fillStyle = 'yellow';
@@ -130,6 +136,7 @@ function draw() {
     ctx.fillStyle = 'white';
     ctx.font = '20px Arial';
     ctx.fillText(`Score: ${score}`, 10, 25);
+    ctx.fillText(`High Score: ${highScore}`, 10, 50);
 
     // Draw game over message
     if (!gameRunning && gameStarted) {
@@ -189,6 +196,9 @@ function generatePipe() {
 // Game over
 function gameOver() {
     gameRunning = false;
+    if (score > highScore) {
+        highScore = score;
+    }
 }
 
 // Reset game
@@ -198,6 +208,9 @@ function resetGame() {
     pipes = [];
     score = 0;
     pipeTimer = 0;
+    pipeSpeed = 2; // Reset pipe speed
+    backgroundSpeed = 1; // Reset background speed
+    foregroundSpeed = 2; // Reset foreground speed
     gameRunning = true;
     gameStarted = true;
     countdown = 3;
